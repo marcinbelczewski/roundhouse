@@ -117,7 +117,7 @@ namespace roundhouse.databases
             }
         }
 
-        public void backup_database(string output_path_minus_database)
+        public virtual void backup_database(string backupPath)
         {
             Log.bound_to(this).log_a_warning_event_containing("{0} with provider {1} does not provide a facility for backing up a database at this time.",
                                                               GetType(), provider);
@@ -129,19 +129,10 @@ namespace roundhouse.databases
 
         public void restore_database(string restore_from_path, string custom_restore_options)
         {
-            try
-            {
-                int current_connection_timeout = command_timeout;
-                command_timeout = restore_timeout;
-                run_sql(restore_database_script(restore_from_path, custom_restore_options), ConnectionType.Admin);
-                command_timeout = current_connection_timeout;
-            }
-            catch (Exception ex)
-            {
-                Log.bound_to(this).log_a_warning_event_containing(
-                    "{0} with provider {1} does not provide a facility for restoring a database at this time.{2}{3}",
-                    GetType(), provider, Environment.NewLine, ex.Message);
-            }
+            int current_connection_timeout = command_timeout;
+            command_timeout = restore_timeout;
+            run_sql(restore_database_script(restore_from_path, custom_restore_options), ConnectionType.Admin);
+            command_timeout = current_connection_timeout;
         }
 
         public virtual void delete_database_if_it_exists()
@@ -214,6 +205,21 @@ namespace roundhouse.databases
             try
             {
                 repository.save_or_update(script_run_error);
+            }
+            catch (Exception ex)
+            {
+                Log.bound_to(this).log_an_error_event_containing(
+                    "{0} with provider {1} does not provide a facility for recording scripts run errors at this time.{2}{3}",
+                    GetType(), provider, Environment.NewLine, ex.Message);
+                throw;
+            }
+        }
+
+        public bool has_errors()
+        {
+            try
+            {
+                return repository.get_all<ScriptsRunError>().Count>0;
             }
             catch (Exception ex)
             {

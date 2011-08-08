@@ -164,9 +164,9 @@ namespace roundhouse.databases
             database.set_recovery_mode(simple);
         }
 
-        public void backup_database(string output_path_minus_database)
+        public void backup_database(string backupPath)
         {
-            database.backup_database(output_path_minus_database);
+            database.backup_database(backupPath);
         }
 
         public void restore_database(string restore_from_path, string custom_restore_options)
@@ -245,6 +245,11 @@ namespace roundhouse.databases
         public string get_current_script_hash(string script_name)
         {
             return database.get_current_script_hash(script_name);
+        }
+
+        public bool has_errors()
+        {
+            return database.has_errors();
         }
 
         private bool disposing = false;

@@ -95,7 +95,7 @@ namespace roundhouse.databases
 
         void create_database_if_it_doesnt_exist();
         void set_recovery_mode(bool simple);
-        void backup_database(string output_path_minus_database);
+        void backup_database(string backupPath);
         void restore_database(string restore_from_path, string custom_restore_options);
         void delete_database_if_it_exists();
         void run_database_specific_tasks();
@@ -109,5 +109,6 @@ namespace roundhouse.databases
         bool has_run_script_already(string script_name);
         string get_current_script_hash(string script_name);
         //object run_sql_scalar(string sql_to_run);
+        bool has_errors();
     }
 }

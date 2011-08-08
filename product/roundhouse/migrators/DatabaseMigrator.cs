@@ -13,7 +13,7 @@ namespace roundhouse.migrators
         void close_admin_connection();
         void open_connection(bool with_transaction);
         void close_connection();
-        void backup_database_if_it_exists();
+        void backup_database_if_it_exists(string currentVersion);
         void create_or_restore_database();
         void set_recovery_mode(bool simple);
         //void restore_database(string restore_from_path);
@@ -23,5 +23,7 @@ namespace roundhouse.migrators
         long version_the_database(string repository_path, string repository_version);
         bool run_sql(string sql_to_run, string script_name, bool run_this_script_once, bool run_this_script_every_time, long version_id, Environment migrating_environment, string repository_version, string repository_path, ConnectionType connection_type);
         //void transfer_to_database_for_changes();
+        void restore_database(string newVersion);
+        bool current_version_has_errors();
     }
 }

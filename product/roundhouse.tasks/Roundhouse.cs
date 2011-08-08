@@ -104,6 +104,8 @@ namespace roundhouse.tasks
         public bool DoNotCreateDatabase { get; set; }
 
         public string OutputPath { get; set; }
+        
+        public string BackupPath { get; set; }
 
         public bool WarnOnOneTimeScriptChanges { get; set; }
 

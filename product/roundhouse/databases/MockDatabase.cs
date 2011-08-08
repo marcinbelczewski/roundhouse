@@ -175,9 +175,9 @@ namespace roundhouse.databases
             Log.bound_to(this).log_an_info_event_containing("Changing the database recovery mode if it has one to {0}", simple ? "simple" : "full");
         }
 
-        public void backup_database(string output_path_minus_database)
+        public void backup_database(string backupPath)
         {
-            Log.bound_to(this).log_an_info_event_containing("Backing up the database to \"{0}\".", output_path_minus_database);
+            Log.bound_to(this).log_an_info_event_containing("Backing up the database to \"{0}\".", backupPath);
         }
 
         public void restore_database(string restore_from_path, string custom_restore_options)
@@ -256,6 +256,11 @@ namespace roundhouse.databases
             }
 
             return string.Empty;
+        }
+
+        public bool has_errors()
+        {
+            return database.has_errors();
         }
 
         private bool disposing = false;

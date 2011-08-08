@@ -76,15 +76,26 @@ namespace roundhouse.migrators
             }
         }
 
-        public void backup_database_if_it_exists()
+        public void backup_database_if_it_exists(string currentVersion)
         {
-            database.backup_database(output_path);
+            var backupPathWithFilename = get_backup_path(currentVersion);
+            Log.bound_to(this).log_an_info_event_containing("Backing up {0} database on {1} server to path {2}.", database.database_name, database.server_name, backupPathWithFilename);
+            database.backup_database(backupPathWithFilename);
+        }
+
+        string get_backup_path(string currentVersion)
+        {
+            return string.Format(@"{0}\{1}_{2}.bak", output_path, database.database_name, currentVersion);
         }
 
         public void restore_database(string restore_from_path, string restore_options)
         {
             Log.bound_to(this).log_an_info_event_containing("Restoring {0} database on {1} server from path {2}.", database.database_name, database.server_name,restore_from_path);
             database.restore_database(restore_from_path, restore_options);
+        }
+        public void restore_database(string newVersion)
+        {
+            restore_database(get_backup_path(newVersion), TokenReplacer.replace_tokens(configuration, custom_restore_options));
         }
 
         public void set_recovery_mode(bool simple)
@@ -115,6 +126,11 @@ namespace roundhouse.migrators
                 database.open_connection(true);
                 //transfer_to_database_for_changes();
             }
+        }
+
+        public bool current_version_has_errors()
+        {
+            return database.has_errors();
         }
 
         public string get_current_version(string repository_path)

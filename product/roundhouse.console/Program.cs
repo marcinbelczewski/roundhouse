@@ -218,7 +218,7 @@ namespace roundhouse.console
                     option => configuration.DoNotCreateDatabase = option != null)
                 //output
                 .Add("o=|output=|outputpath=",
-                    string.Format("OutputPath - This is where everything related to the migration is stored. This includes any backups, all items that ran, permission dumps, logs, etc. Defaults to \"{0}\".",
+                    string.Format("OutputPath - This is where everything related to the migration is stored. This includes all items that ran, permission dumps, logs, etc. Defaults to \"{0}\".",
                         ApplicationParameters.default_output_path),
                     option => configuration.OutputPath = option)
                 //warn on changes

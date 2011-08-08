@@ -62,7 +62,7 @@ namespace roundhouse.runners
         {
             database_migrator.initialize_connections();
 
-            Log.bound_to(this).log_an_info_event_containing("Running {0} v{1} against {2} - {3}.",
+            Log.bound_to(this).log_an_info_event_containing("Running modified {0} v{1} against {2} - {3}.",
                     ApplicationParameters.name,
                     infrastructure.VersionInformation.get_current_assembly_version(),
                     database_migrator.database.server_name,
@@ -95,7 +95,6 @@ namespace roundhouse.runners
                 Log.bound_to(this).log_an_info_event_containing("Setup, Backup, Create/Restore/Drop");
                 Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
                 create_share_and_set_permissions_for_change_drop_folder();
-                //database_migrator.backup_database_if_it_exists();
                 remove_share_from_change_drop_folder();
 
                 if (!dropping_the_database)
@@ -113,77 +112,128 @@ namespace roundhouse.runners
                     Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
                     database_migrator.run_roundhouse_support_tasks();
 
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
-                    Log.bound_to(this).log_an_info_event_containing("Versioning");
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
+
                     string current_version = database_migrator.get_current_version(repository_path);
                     string new_version = version_resolver.resolve_version();
-                    Log.bound_to(this).log_an_info_event_containing(" Migrating {0} from version {1} to {2}.", database_migrator.database.database_name, current_version, new_version);
-                    long version_id = database_migrator.version_the_database(repository_path, new_version);
-
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
-                    Log.bound_to(this).log_an_info_event_containing("Migration Scripts");
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
-
-                    database_migrator.open_admin_connection();
-                    Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".", "AlterDatabase", known_folders.alter_database.folder_full_path);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    traverse_files_and_run_sql(known_folders.alter_database.folder_full_path, version_id, known_folders.alter_database, environment, new_version,ConnectionType.Admin);
-                    database_migrator.close_admin_connection();
-
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\". These should be one time only scripts.", "Update", known_folders.up.folder_full_path);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    traverse_files_and_run_sql(known_folders.up.folder_full_path, version_id, known_folders.up, environment, new_version);
-
-                    //todo: remember when looking through all files below here, change CREATE to ALTER
-                    // we are going to create the create if not exists script
-
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".", "Run First After Update", known_folders.run_first_after_up.folder_full_path);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    traverse_files_and_run_sql(known_folders.run_first_after_up.folder_full_path, version_id, known_folders.run_first_after_up, environment, new_version);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".", "Function", known_folders.functions.folder_full_path);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    traverse_files_and_run_sql(known_folders.functions.folder_full_path, version_id, known_folders.functions, environment, new_version);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".", "View", known_folders.views.folder_full_path);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    traverse_files_and_run_sql(known_folders.views.folder_full_path, version_id, known_folders.views, environment, new_version);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".", "Stored Procedure", known_folders.sprocs.folder_full_path);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    traverse_files_and_run_sql(known_folders.sprocs.folder_full_path, version_id, known_folders.sprocs, environment, new_version);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".", "Index", known_folders.indexes.folder_full_path);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    traverse_files_and_run_sql(known_folders.indexes.folder_full_path, version_id, known_folders.indexes, environment, new_version);
-
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".", "Run after Other Anytime Scripts", known_folders.runAfterOtherAnyTimeScripts.folder_full_path);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    traverse_files_and_run_sql(known_folders.runAfterOtherAnyTimeScripts.folder_full_path, version_id, known_folders.runAfterOtherAnyTimeScripts, environment, new_version);
                     
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\". These scripts will run every time.", "Permission", known_folders.permissions.folder_full_path);
-                    Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
-                    if (run_in_a_transaction)
+                    if (deploying_earlier_version(new_version, current_version))
                     {
-                        database_migrator.close_connection();
-                        database_migrator.open_connection(false);
+                        Log.bound_to(this).log_a_warning_event_containing("An attempt to deploy older version. Will try to restore instead");
+                        database_migrator.restore_database(new_version);
                     }
+                    else
+                    {
+                        if (database_migrator.current_version_has_errors())
+                        {                            
+                            var message = string.Format("Current version {0} had error scripts runs. Unable to deploy over potentially corrupted database",current_version);
+                            Log.bound_to(this).log_a_fatal_event_containing(message);
+                            throw new ApplicationException(message);
+                        }
+                        Log.bound_to(this).log_an_info_event_containing("Backing up database in current version {0}", current_version);
+                        database_migrator.backup_database_if_it_exists(current_version);
 
-                    traverse_files_and_run_sql(known_folders.permissions.folder_full_path, version_id, known_folders.permissions, environment, new_version);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
+                        Log.bound_to(this).log_an_info_event_containing("Versioning");
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
+                        Log.bound_to(this).log_an_info_event_containing(" Migrating {0} from version {1} to {2}.",
+                                                                        database_migrator.database.database_name,
+                                                                        current_version, new_version);
+                        long version_id = database_migrator.version_the_database(repository_path, new_version);
 
-                    Log.bound_to(this).log_an_info_event_containing("{0}{0}{1} v{2} has kicked your database ({3})! You are now at version {4}. All changes and backups can be found at \"{5}\".",
-                                                System.Environment.NewLine,
-                                                ApplicationParameters.name,
-                                                infrastructure.VersionInformation.get_current_assembly_version(),
-                                                database_migrator.database.database_name,
-                                                new_version,
-                                                known_folders.change_drop.folder_full_path);
-                    database_migrator.close_connection();
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
+                        Log.bound_to(this).log_an_info_event_containing("Migration Scripts");
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
+
+                        database_migrator.open_admin_connection();
+                        Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".",
+                                                                        "AlterDatabase",
+                                                                        known_folders.alter_database.folder_full_path);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        traverse_files_and_run_sql(known_folders.alter_database.folder_full_path, version_id,
+                                                   known_folders.alter_database, environment, new_version,
+                                                   ConnectionType.Admin);
+                        database_migrator.close_admin_connection();
+
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        Log.bound_to(this).log_an_info_event_containing(
+                            "Looking for {0} scripts in \"{1}\". These should be one time only scripts.", "Update",
+                            known_folders.up.folder_full_path);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        traverse_files_and_run_sql(known_folders.up.folder_full_path, version_id, known_folders.up,
+                                                   environment, new_version);
+
+                        //todo: remember when looking through all files below here, change CREATE to ALTER
+                        // we are going to create the create if not exists script
+
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".",
+                                                                        "Run First After Update",
+                                                                        known_folders.run_first_after_up.
+                                                                            folder_full_path);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        traverse_files_and_run_sql(known_folders.run_first_after_up.folder_full_path, version_id,
+                                                   known_folders.run_first_after_up, environment, new_version);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".",
+                                                                        "Function",
+                                                                        known_folders.functions.folder_full_path);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        traverse_files_and_run_sql(known_folders.functions.folder_full_path, version_id,
+                                                   known_folders.functions, environment, new_version);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".", "View",
+                                                                        known_folders.views.folder_full_path);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        traverse_files_and_run_sql(known_folders.views.folder_full_path, version_id, known_folders.views,
+                                                   environment, new_version);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".",
+                                                                        "Stored Procedure",
+                                                                        known_folders.sprocs.folder_full_path);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        traverse_files_and_run_sql(known_folders.sprocs.folder_full_path, version_id,
+                                                   known_folders.sprocs, environment, new_version);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".", "Index",
+                                                                        known_folders.indexes.folder_full_path);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        traverse_files_and_run_sql(known_folders.indexes.folder_full_path, version_id,
+                                                   known_folders.indexes, environment, new_version);
+
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        Log.bound_to(this).log_an_info_event_containing("Looking for {0} scripts in \"{1}\".",
+                                                                        "Run after Other Anytime Scripts",
+                                                                        known_folders.runAfterOtherAnyTimeScripts.
+                                                                            folder_full_path);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        traverse_files_and_run_sql(known_folders.runAfterOtherAnyTimeScripts.folder_full_path,
+                                                   version_id, known_folders.runAfterOtherAnyTimeScripts, environment,
+                                                   new_version);
+
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        Log.bound_to(this).log_an_info_event_containing(
+                            "Looking for {0} scripts in \"{1}\". These scripts will run every time.", "Permission",
+                            known_folders.permissions.folder_full_path);
+                        Log.bound_to(this).log_an_info_event_containing("{0}", "-".PadRight(50, '-'));
+                        if (run_in_a_transaction)
+                        {
+                            database_migrator.close_connection();
+                            database_migrator.open_connection(false);
+                        }
+
+                        traverse_files_and_run_sql(known_folders.permissions.folder_full_path, version_id,
+                                                   known_folders.permissions, environment, new_version);
+
+                        Log.bound_to(this).log_an_info_event_containing(
+                            "{0}{0}{1} v{2} has kicked your database ({3})! You are now at version {4}. All changes and backups can be found at \"{5}\".",
+                            System.Environment.NewLine,
+                            ApplicationParameters.name,
+                            infrastructure.VersionInformation.get_current_assembly_version(),
+                            database_migrator.database.database_name,
+                            new_version,
+                            known_folders.change_drop.folder_full_path);
+                        database_migrator.close_connection();
+                    }
                 }
                 else
                 {
@@ -213,6 +263,11 @@ namespace roundhouse.runners
                 database_migrator.database.Dispose();
                 copy_log_file_to_change_drop_folder();
             }
+        }
+
+        bool deploying_earlier_version(string new_version, string current_version)
+        {
+            return new_version.CompareTo(current_version) < 0;
         }
 
         private void create_change_drop_folder()

@@ -1,3 +1,6 @@
+using Microsoft.SqlServer.Management.Common;
+using Microsoft.SqlServer.Management.Smo;
+
 namespace roundhouse.databases.sqlserver
 {
     using System;
@@ -222,6 +225,20 @@ namespace roundhouse.databases.sqlserver
 
             return result.Tables.Count == 0 ? null : result.Tables[0];
         }
+
+
+        public override void backup_database(string backup_path)
+        {
+            var sql_server = new Server(new ServerConnection(new SqlConnection(build_connection_string(server_name, database_name, connect_options))));
+            sql_server.BackupDevices.Add(new BackupDevice(sql_server, database_name));
+            var backupMgr = new Backup();
+            backupMgr.CompressionOption = BackupCompressionOptions.On;
+            backupMgr.Devices.AddDevice(backup_path, DeviceType.File);
+            backupMgr.Database = database_name;
+            backupMgr.Action = BackupActionType.Database;
+            backupMgr.SqlBackup(sql_server);
+        }
+
 
     }
 }
