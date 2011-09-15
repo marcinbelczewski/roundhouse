@@ -83,7 +83,7 @@ namespace roundhouse.databases.oracle
 
         public override void set_provider()
         {
-            provider = "System.Data.OracleClient";
+            provider = "Oracle.DataAccess.Client";
         }
 
         public override void run_database_specific_tasks()
