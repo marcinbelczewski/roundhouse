@@ -217,7 +217,7 @@ namespace roundhouse.console
                     "DoNotCreateDatabase - This instructs RH to not create a database if it does not exists. Defaults to false.",
                     option => configuration.DoNotCreateDatabase = option != null)
                 //don't backup the database 
-                .Add("db|dnb|donotbackupdatabase",
+                .Add("dnb|donotbackupdatabase",
                     "DoNotBackupDatabase - This instructs RH to not backup the database. Defaults to false.",
                     option => configuration.DoNotBackupDatabase = option != null)
                 //output
