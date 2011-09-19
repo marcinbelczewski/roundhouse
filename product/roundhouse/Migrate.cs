@@ -68,6 +68,7 @@ namespace roundhouse
                configuration.Silent,
                configuration.Drop,
                configuration.DoNotCreateDatabase,
+               configuration.DoNotBackupDatabase,
                configuration.WithTransaction,
                configuration.RecoveryModeSimple,
                configuration);

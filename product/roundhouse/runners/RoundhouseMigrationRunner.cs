@@ -25,6 +25,7 @@ namespace roundhouse.runners
         public bool silent { get; set; }
         public bool dropping_the_database { get; set; }
         private readonly bool dont_create_the_database;
+        private readonly bool dont_backup_the_database;
         private bool run_in_a_transaction;
         private readonly bool use_simple_recovery;
         private readonly ConfigurationPropertyHolder configuration;
@@ -40,6 +41,7 @@ namespace roundhouse.runners
                 bool silent,
                 bool dropping_the_database,
                 bool dont_create_the_database,
+                bool dont_backup_the_database,
                 bool run_in_a_transaction,
                 bool use_simple_recovery,
                 ConfigurationPropertyHolder configuration)
@@ -53,6 +55,7 @@ namespace roundhouse.runners
             this.silent = silent;
             this.dropping_the_database = dropping_the_database;
             this.dont_create_the_database = dont_create_the_database;
+            this.dont_backup_the_database = dont_backup_the_database;
             this.run_in_a_transaction = run_in_a_transaction;
             this.use_simple_recovery = use_simple_recovery;
             this.configuration = configuration;
@@ -129,8 +132,12 @@ namespace roundhouse.runners
                             Log.bound_to(this).log_a_fatal_event_containing(message);
                             throw new ApplicationException(message);
                         }
-                        Log.bound_to(this).log_an_info_event_containing("Backing up database in current version {0}", current_version);
-                        database_migrator.backup_database_if_it_exists(current_version);
+                        if (!dont_backup_the_database)
+                        {
+                            Log.bound_to(this).log_an_info_event_containing(
+                                "Backing up database in current version {0}", current_version);
+                            database_migrator.backup_database_if_it_exists(current_version);
+                        }
 
                         Log.bound_to(this).log_an_info_event_containing("{0}", "=".PadRight(50, '='));
                         Log.bound_to(this).log_an_info_event_containing("Versioning");

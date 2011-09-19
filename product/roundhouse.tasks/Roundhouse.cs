@@ -102,6 +102,8 @@ namespace roundhouse.tasks
         public bool Drop { get; set; }
 
         public bool DoNotCreateDatabase { get; set; }
+        
+        public bool DoNotBackupDatabase { get; set; }
 
         public string OutputPath { get; set; }
         
@@ -151,6 +153,7 @@ namespace roundhouse.tasks
                 Silent,
                 Drop,
                 DoNotCreateDatabase,
+                DoNotBackupDatabase,
                 WithTransaction,
                 RecoveryModeSimple,
                 this);
