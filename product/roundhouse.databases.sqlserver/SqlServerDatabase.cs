@@ -231,7 +231,11 @@ namespace roundhouse.databases.sqlserver
         {
             var sql_server = new Server(new ServerConnection(new SqlConnection(build_connection_string(server_name, database_name, connect_options))));
             sql_server.BackupDevices.Add(new BackupDevice(sql_server, database_name));
-            var backupMgr = new Backup();
+            var backupMgr = new Backup
+                                {
+                                    Initialize = true,
+                                    BackupSetName = database_name
+                                };
             if (sql_server_supports_backup_compression(sql_server)) //compression works only for SQL Server 2008 and newer
             {
                 backupMgr.CompressionOption = BackupCompressionOptions.On;
