@@ -41,7 +41,7 @@ namespace roundhouse.infrastructure.app
         string DatabaseType { get; set; }
         bool Drop { get; set; }
         bool DoNotCreateDatabase { get; set; }
-        bool DoNotBackupDatabase { get; set; }
+        bool BackupDatabase { get; set; }
         bool WithTransaction { get; set; }
         bool RecoveryModeSimple { get; set; }
         bool Debug { get; set; }

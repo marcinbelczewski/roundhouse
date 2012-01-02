@@ -216,10 +216,10 @@ namespace roundhouse.console
                 .Add("dc|dnc|donotcreatedatabase",
                     "DoNotCreateDatabase - This instructs RH to not create a database if it does not exists. Defaults to false.",
                     option => configuration.DoNotCreateDatabase = option != null)
-                //don't backup the database 
-                .Add("dnb|donotbackupdatabase",
-                    "DoNotBackupDatabase - This instructs RH to not backup the database. Defaults to false.",
-                    option => configuration.DoNotBackupDatabase = option != null)
+                //backup the database 
+                .Add("bd|backupdatabase",
+                    "BackupDatabase - This instructs RH to backup the database. Defaults to false.",
+                    option => configuration.BackupDatabase = option != null)
                 //output
                 .Add("o=|output=|outputpath=",
                     string.Format("OutputPath - This is where everything related to the migration is stored. This includes all items that ran, permission dumps, logs, etc. Defaults to \"{0}\".",
@@ -367,7 +367,7 @@ namespace roundhouse.console
                  configuration.Silent,
                  configuration.Drop,
                  configuration.DoNotCreateDatabase,
-                 configuration.DoNotBackupDatabase,
+                 configuration.BackupDatabase,
                  configuration.WithTransaction,
                  configuration.RecoveryModeSimple, 
                  configuration);
